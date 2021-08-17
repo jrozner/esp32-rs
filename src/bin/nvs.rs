@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 
-use nvs::Nvs;
+use esp32::nvs::Nvs;
 
 const VERSION: &'static str = "0.1.0";
 
@@ -149,16 +149,12 @@ fn main() {
         if let Some(ns) = ns {
             let namespace = nvs.namespace(ns);
             if let Some(namespace) = namespace {
-                namespace
-                    .values()
-                    .for_each(|entry| println!("{:?}", entry));
+                namespace.values().for_each(|entry| println!("{:?}", entry));
             }
             // TODO: should we let the user know the ns doesn't exist?
         } else {
             let entries = nvs.entries();
-            entries
-                .iter()
-                .for_each(|entry| println!("{:?}", entry));
+            entries.iter().for_each(|entry| println!("{:?}", entry));
         };
     }
 }

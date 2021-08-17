@@ -4,8 +4,8 @@ use std::io::Read;
 
 use nom::multi::many0;
 
-use crate::event::{Entry, EntryType};
-use crate::page::{EntryStateBitmap, Page};
+use crate::nvs::event::{Entry, EntryType};
+use crate::nvs::page::{EntryStateBitmap, Page};
 
 #[derive(Debug, Clone)]
 pub struct Nvs {
@@ -23,7 +23,7 @@ impl Nvs {
         let mut data = vec![];
         f.read_to_end(&mut data).unwrap();
 
-        let (_, pages) = many0(crate::parsers::page)(&data).unwrap();
+        let (_, pages) = many0(crate::nvs::parsers::page)(&data).unwrap();
 
         let mut entries = vec![];
         let mut namespaces: HashMap<u8, Vec<usize>> = HashMap::new();
@@ -44,7 +44,7 @@ impl Nvs {
                 }
 
                 let (remainder, entry) =
-                    crate::parsers::entry(page_data, i as u8, start as u8).unwrap();
+                    crate::nvs::parsers::entry(page_data, i as u8, start as u8).unwrap();
                 page_data = remainder;
                 start = entry.end() as usize;
 

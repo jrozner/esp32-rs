@@ -7,11 +7,11 @@ use nom::number::complete::{le_i16, le_i32, le_i64, le_i8, le_u16, le_u32, le_u6
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::event::{Entry, EntryType};
-use crate::page::{EntryStateBitmap, Page};
+use crate::nvs::event::{Entry, EntryType};
+use crate::nvs::page::{EntryStateBitmap, Page};
 
 pub(crate) fn page(input: &[u8]) -> IResult<&[u8], Page> {
-    let (input, state) = map_res(le_u32, |val| crate::page::State::try_from(val))(input)?;
+    let (input, state) = map_res(le_u32, |val| crate::nvs::page::State::try_from(val))(input)?;
     let (input, seq_no) = le_u32(input)?;
     let (input, version) = le_u8(input)?;
     let (input, unused) = count(le_u8, 19)(input)?;
