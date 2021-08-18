@@ -32,17 +32,21 @@ pub struct PartitionTable {
 }
 
 impl PartitionTable {
-    pub fn new(filename: &str) -> PartitionTable {
+    pub fn new(input: &[u8]) -> PartitionTable {
+        let (_, partitions) = many_m_n(1, 95, parse_partition)(&input).unwrap();
+
+        PartitionTable {
+            partitions,
+            hash: [0; 32],
+        }
+    }
+
+    pub fn from_file(filename: &str) -> PartitionTable {
         let mut file = File::open(filename).unwrap();
         let mut data = vec![];
         file.read_to_end(&mut data).unwrap();
 
-        let (input, partitions) = many_m_n(1, 95, parse_partition)(&data).unwrap();
-
-        PartitionTable {
-            partitions: partitions,
-            hash: [0; 32],
-        }
+        PartitionTable::new(&data)
     }
 }
 
