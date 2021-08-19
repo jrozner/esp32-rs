@@ -25,20 +25,23 @@ fn parse_partition(input: &[u8]) -> IResult<&[u8], Partition> {
     Ok((input, partition))
 }
 
+fn parse_hash(input: &[u8]) -> IResult<&[u8], Vec<u8>> {
+    let (input, hash) = map(take(32usize), |bytes: &[u8]| bytes.to_vec())(input)?;
+    Ok((input, hash))
+}
+
 #[derive(Debug, Clone)]
 pub struct PartitionTable {
     partitions: Vec<Partition>,
-    hash: [u8; 32],
+    hash: Vec<u8>,
 }
 
 impl PartitionTable {
     pub fn new(input: &[u8]) -> PartitionTable {
-        let (_, partitions) = many_m_n(1, 95, parse_partition)(&input).unwrap();
+        let (input, partitions) = many_m_n(1, 95, parse_partition)(input).unwrap();
+        let (_, hash) = parse_hash(input).unwrap();
 
-        PartitionTable {
-            partitions,
-            hash: [0; 32],
-        }
+        PartitionTable { partitions, hash }
     }
 
     pub fn from_file(filename: &str) -> PartitionTable {
@@ -47,6 +50,14 @@ impl PartitionTable {
         file.read_to_end(&mut data).unwrap();
 
         PartitionTable::new(&data)
+    }
+
+    pub fn partitions(&self) -> &[Partition] {
+        &self.partitions
+    }
+
+    pub fn hash(&self) -> &[u8] {
+        &self.hash
     }
 }
 
