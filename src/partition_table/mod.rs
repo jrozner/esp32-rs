@@ -16,7 +16,7 @@ fn parse_partition(input: &[u8]) -> IResult<&[u8], Partition> {
     let (input, name) = map(take(16usize), |bytes: &[u8]| {
         let end = bytes.position(|c| c == 0);
         match end {
-            Some(end) => String::from_utf8_lossy(&bytes[0..=end]).to_string(),
+            Some(end) => String::from_utf8_lossy(&bytes[0..end]).to_string(),
             None => String::from(""),
         }
     })(input)?;
