@@ -1,8 +1,7 @@
 use clap::{App, Arg};
 
 use esp32::nvs::Nvs;
-
-const VERSION: &'static str = "0.1.0";
+use esp32::VERSION;
 
 fn main() {
     let app = App::new("nvs")

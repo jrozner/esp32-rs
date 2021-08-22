@@ -1,11 +1,13 @@
 use std::fs::File;
 use std::io::Read;
+use std::fmt::Formatter;
 
 use nom::bytes::complete::{tag, take};
 use nom::combinator::map;
 use nom::multi::many_m_n;
 use nom::number::complete::{le_u32, le_u8};
 use nom::{IResult, InputIter};
+use serde::Serialize;
 
 fn parse_partition(input: &[u8]) -> IResult<&[u8], Partition> {
     let (input, _) = tag(&[0xaa, 0x50])(input)?;
@@ -61,9 +63,10 @@ impl PartitionTable {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Partition {
     name: String,
+    #[serde(rename="type")]
     partition_type: PartitionType,
     subtype: Subtype,
     offset: u32,
@@ -91,7 +94,7 @@ impl Partition {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum PartitionType {
     App,
     Data,
@@ -102,6 +105,17 @@ pub enum PartitionType {
     /// The esp-idf reserves values 0-64 for core functions. Invalid is used to catch anything in
     /// this range that does not have a defined value
     Invalid(u8),
+}
+
+impl std::fmt::Display for PartitionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::App => write!(f, "app"),
+            Self::Data => write!(f, "data"),
+            Self::Any => write!(f, "{:x}", 255),
+            Self::Custom(i) | Self::Invalid(i) => write!(f, "{:x}", i),
+        }
+    }
 }
 
 impl From<u8> for PartitionType {
@@ -116,34 +130,61 @@ impl From<u8> for PartitionType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Subtype {
+    #[serde(rename="factory")]
     AppFactory,
+    #[serde(rename="ota0")]
     AppOta0,
+    #[serde(rename="ota1")]
     AppOta1,
+    #[serde(rename="ota2")]
     AppOta2,
+    #[serde(rename="ota3")]
     AppOta3,
+    #[serde(rename="ota4")]
     AppOta4,
+    #[serde(rename="ota5")]
     AppOta5,
+    #[serde(rename="ota6")]
     AppOta6,
+    #[serde(rename="ota7")]
     AppOta7,
+    #[serde(rename="ota8")]
     AppOta8,
+    #[serde(rename="ota9")]
     AppOta9,
+    #[serde(rename="ota10")]
     AppOta10,
+    #[serde(rename="ota11")]
     AppOta11,
+    #[serde(rename="ota12")]
     AppOta12,
+    #[serde(rename="ota13")]
     AppOta13,
+    #[serde(rename="ota14")]
     AppOta14,
+    #[serde(rename="ota15")]
     AppOta15,
+    #[serde(rename="test")]
     AppTest,
+    #[serde(rename="ota")]
     DataOta,
+    #[serde(rename="phy")]
     DataPhy,
+    #[serde(rename="nvs")]
     DataNvs,
+    #[serde(rename="coredump")]
     DataCoreDump,
+    #[serde(rename="nvs_keys")]
     DataNvsKeys,
+    #[serde(rename="efuse")]
     DataEfuse,
+    #[serde(rename="esphttpd")]
     DataEspHttpd,
+    #[serde(rename="fat")]
     DataFat,
+    #[serde(rename="spiffs")]
     DataSpiffs,
     Any,
     Invalid(u8),
@@ -192,6 +233,43 @@ impl Subtype {
             },
             PartitionType::Invalid(_) => Subtype::Invalid(subtype_value),
             PartitionType::Any => Subtype::Any,
+        }
+    }
+}
+
+impl std::fmt::Display for Subtype {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::AppFactory => write!(f, "factory"),
+            Self::AppOta0 => write!(f, "ota_0"),
+            Self::AppOta1=> write!(f, "ota_1"),
+            Self::AppOta2=> write!(f, "ota_2"),
+            Self::AppOta3=> write!(f, "ota_3"),
+            Self::AppOta4 => write!(f, "ota_4"),
+            Self::AppOta5=> write!(f, "ota_5"),
+            Self::AppOta6=> write!(f, "ota_6"),
+            Self::AppOta7 => write!(f, "ota_7"),
+            Self::AppOta8 => write!(f, "ota_8"),
+            Self::AppOta9=> write!(f, "ota_9"),
+            Self::AppOta10=> write!(f, "ota_10"),
+            Self::AppOta11 => write!(f, "ota_11"),
+            Self::AppOta12 => write!(f, "ota_12"),
+            Self::AppOta13=> write!(f, "ota_13"),
+            Self::AppOta14=> write!(f, "ota_14"),
+            Self::AppOta15=> write!(f, "ota_15"),
+            Self::AppTest=> write!(f, "test"),
+            Self::DataOta => write!(f, "ota"),
+            Self::DataPhy => write!(f, "phy"),
+            Self::DataNvs=> write!(f, "nvs"),
+            Self::DataCoreDump=> write!(f, "coredump"),
+            Self::DataNvsKeys=> write!(f, "nvs_keys"),
+            Self::DataEfuse => write!(f, "efuse"),
+            Self::DataEspHttpd => write!(f, "esphttpd"),
+            Self::DataFat=> write!(f, "fat"),
+            Self::DataSpiffs=> write!(f, "spiffs"),
+            Self::Any=> write!(f, "0xff"),
+            Self::Invalid(i) => write!(f, "{:x}", i),
+            Self::Custom(i) => write!(f, "{:x}", i),
         }
     }
 }
